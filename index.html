@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151914">
+  <meta name="description" content="Генератор наёмников для DURF Loot Chest.">
+  <title>Наёмники — DURF Loot Chest</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --night: #151914;
+      --night-soft: #1c221b;
+      --paper: #eee5d2;
+      --paper-deep: #ded2ba;
+      --ink: #25281f;
+      --muted: #aaa58f;
+      --gold: #c99e55;
+      --gold-bright: #e3bd76;
+      --line: rgba(226, 211, 177, 0.18);
+      --red: #963f35;
+      --blue: #465b79;
+      --green: #344a38;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: var(--night);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      color: #f0e9d9;
+      background:
+        radial-gradient(ellipse at 82% 13%, rgba(96, 79, 45, 0.19), transparent 31%),
+        radial-gradient(ellipse at 9% 58%, rgba(55, 73, 55, 0.17), transparent 36%),
+        linear-gradient(135deg, #171b16 0%, #11140f 52%, #1a1d17 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font: inherit;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    button:focus-visible {
+      outline: 3px solid var(--gold-bright);
+      outline-offset: 4px;
+    }
+
+    .page-shell {
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .page-shell::before {
+      position: absolute;
+      z-index: 0;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 100%;
+      background-image: radial-gradient(rgba(238, 229, 210, 0.018) 0.55px, transparent 0.7px);
+      background-size: 7px 7px;
+      content: "";
+      pointer-events: none;
+    }
+
+    .page-width {
+      width: calc(100% - 64px);
+      max-width: 1120px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .site-header {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: #f2ead7;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      color: var(--gold-bright);
+    }
+
+    .brand-name {
+      display: block;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1;
+    }
+
+    .brand-subtitle {
+      display: block;
+      margin-top: 5px;
+      color: #b8ad94;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.19em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .header-note {
+      color: #c5b99e;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.17em;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .header-note span {
+      display: block;
+      margin-top: 7px;
+      color: #898875;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+    }
+
+    .hero {
+      min-height: 430px;
+      display: grid;
+      grid-template-columns: 1.03fr 0.97fr;
+      align-items: center;
+      gap: 28px;
+      padding: 42px 0 46px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+    }
+
+    .eyebrow,
+    .section-kicker,
+    .sheet-label {
+      margin: 0;
+      color: var(--gold-bright);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      line-height: 1.5;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      max-width: 660px;
+      margin: 19px 0 18px;
+      color: #f1e8d5;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(54px, 7.2vw, 82px);
+      font-weight: 400;
+      letter-spacing: -0.055em;
+      line-height: 0.98;
+    }
+
+    .hero h1 span {
+      color: var(--gold-bright);
+      font-style: italic;
+    }
+
+    .hero-description {
+      max-width: 430px;
+      margin: 0;
+      color: #b9b5a5;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 17px;
+      margin-top: 29px;
+    }
+
+    .hire-button {
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 23px;
+      border: 1px solid #ddba79;
+      border-radius: 2px;
+      background: #c89b51;
+      color: #211f18;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: 0.01em;
+      box-shadow: 0 5px 0 #8e6835;
+      transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .hire-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #d7ad65;
+      box-shadow: 0 7px 0 #8e6835;
+    }
+
+    .hire-button:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #8e6835;
+    }
+
+    .hire-button:disabled {
+      border-color: #68644f;
+      background: #595847;
+      color: #d0c7b2;
+      cursor: not-allowed;
+      box-shadow: 0 4px 0 #3b3c31;
+    }
+
+    .hire-hint {
+      max-width: 185px;
+      color: #989786;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .hero-art {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .hero-art svg {
+      width: min(100%, 390px);
+      height: auto;
+      overflow: visible;
+      transition: transform 350ms ease;
+    }
+
+    @media (hover: hover) {
+      .hero-art:hover svg {
+        transform: rotate(2deg) translateY(-3px);
+      }
+    }
+
+    .workbench {
+      padding: 42px 0 0;
+    }
+
+    .workbench-heading,
+    .roster-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .section-kicker {
+      color: #b0a27e;
+    }
+
+    .workbench-heading h2,
+    .roster-heading h2 {
+      margin: 7px 0 0;
+      color: #f0e8d7;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      font-weight: 400;
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+    }
+
+    .workbench-index {
+      padding-bottom: 3px;
+      color: #8d8b79;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .idle-state {
+      display: block;
+      margin-top: 22px;
+      padding: 20px 0 21px 18px;
+      border-left: 2px solid #78643e;
+    }
+
+    .idle-title {
+      margin: 0;
+      color: #ded4c0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+    }
+
+    .idle-copy {
+      margin: 6px 0 0;
+      color: #949483;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .candidate-sheet {
+      margin-top: 24px;
+      padding: clamp(20px, 3.5vw, 38px);
+      border: 1px solid #a99876;
+      border-radius: 2px;
+      background:
+        radial-gradient(ellipse at 94% 10%, rgba(181, 157, 111, 0.17), transparent 29%),
+        linear-gradient(145deg, #f1e9d8 0%, var(--paper) 60%, #e5dac4 100%);
+      color: var(--ink);
+      box-shadow: 8px 9px 0 rgba(0, 0, 0, 0.16);
+    }
+
+    .sheet-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(55, 53, 43, 0.22);
+    }
+
+    .sheet-label {
+      color: #76613c;
+      font-size: 9px;
+    }
+
+    .sheet-number {
+      color: #77715f;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .sheet-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(270px, 0.88fr);
+      align-items: end;
+      gap: 28px;
+      padding: 25px 0 22px;
+    }
+
+    .candidate-name {
+      margin: 0;
+      color: #24261f;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(32px, 4.6vw, 47px);
+      font-weight: 400;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .candidate-profession {
+      margin: 9px 0 0;
+      color: #786641;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .candidate-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0;
+    }
+
+    .candidate-stat {
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      padding: 9px 11px;
+      border: 1px solid rgba(42, 43, 36, 0.16);
+      border-radius: 2px;
+      background: rgba(255, 252, 244, 0.58);
+    }
+
+    .candidate-stat dt {
+      color: #6f6c5d;
+      font-size: 8px;
+      font-weight: 750;
+      letter-spacing: 0.1em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .candidate-stat dd {
+      margin: 0;
+      color: #282821;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .candidate-stat.stat-hp {
+      border-color: rgba(150, 63, 53, 0.34);
+      background: #f0d9d2;
+    }
+
+    .candidate-stat.stat-hp dd {
+      color: #873b33;
+    }
+
+    .candidate-stat.stat-pay {
+      border-color: rgba(152, 112, 44, 0.35);
+      background: #f0e1bd;
+    }
+
+    .candidate-stat.stat-pay dd {
+      color: #78551d;
+    }
+
+    .candidate-stat.stat-morale {
+      border-color: rgba(70, 91, 121, 0.31);
+      background: #dce2e9;
+    }
+
+    .candidate-stat.stat-morale dd {
+      color: #40516a;
+    }
+
+    .sheet-details {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 30px;
+      padding: 18px 0 22px;
+      border-top: 1px solid rgba(55, 53, 43, 0.2);
+    }
+
+    .detail-label {
+      margin: 0 0 12px;
+      color: #6d6149;
+      font-size: 9px;
+      font-weight: 750;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .gear-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .gear-list li {
+      min-height: 40px;
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      color: #37372f;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .gear-number {
+      flex: 0 0 auto;
+      color: #947849;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    .purse {
+      padding-left: 22px;
+      border-left: 1px solid rgba(55, 53, 43, 0.22);
+    }
+
+    .purse .detail-label {
+      margin-bottom: 5px;
+    }
+
+    .purse-value {
+      margin: 0;
+      color: #72531f;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 31px;
+      line-height: 1.2;
+    }
+
+    .purse-value small {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .purse-caption {
+      margin: 4px 0 0;
+      color: #817966;
+      font-size: 11px;
+    }
+
+    .sheet-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(55, 53, 43, 0.2);
+    }
+
+    .accept-button,
+    .reject-button {
+      min-height: 46px;
+      padding: 0 20px;
+      border: 1px solid #344a38;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 750;
+      transition: transform 140ms ease, background-color 140ms ease;
+    }
+
+    .accept-button {
+      background: #344a38;
+      color: #f4ecd9;
+    }
+
+    .accept-button:hover {
+      background: #405b45;
+      transform: translateY(-1px);
+    }
+
+    .accept-button:active,
+    .reject-button:active {
+      transform: translateY(1px);
+    }
+
+    .reject-button {
+      border-color: rgba(48, 48, 39, 0.34);
+      background: transparent;
+      color: #5a5649;
+    }
+
+    .reject-button:hover {
+      background: rgba(64, 59, 47, 0.08);
+    }
+
+    .roster {
+      margin-top: 55px;
+      padding: 28px 0 46px;
+      border-top: 1px solid var(--line);
+    }
+
+    .roster-heading h2 {
+      font-size: 28px;
+    }
+
+    .roster-count {
+      margin-left: 8px;
+      color: var(--gold-bright);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0;
+      vertical-align: 4px;
+    }
+
+    .storage-note {
+      margin: 8px 0 0;
+      color: #909080;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .roster-empty {
+      margin: 23px 0 0;
+      padding: 17px 0;
+      border-top: 1px solid rgba(226, 211, 177, 0.12);
+      border-bottom: 1px solid rgba(226, 211, 177, 0.12);
+      color: #aaa794;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .hired-list {
+      display: block;
+      margin: 23px 0 0;
+      padding: 0;
+      border-top: 1px solid rgba(226, 211, 177, 0.18);
+      list-style: none;
+    }
+
+    .hired-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 24px;
+      padding: 17px 0;
+      border-bottom: 1px solid rgba(226, 211, 177, 0.15);
+    }
+
+    .hired-person {
+      min-width: 0;
+    }
+
+    .hired-name {
+      margin: 0;
+      color: #e9e0cf;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .hired-detail {
+      margin: 4px 0 0;
+      color: #9d9a87;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .hired-pay {
+      color: #dfc28b;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .release-button {
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid rgba(226, 211, 177, 0.25);
+      border-radius: 2px;
+      background: transparent;
+      color: #aaa794;
+      cursor: pointer;
+      font-size: 11px;
+      transition: border-color 140ms ease, color 140ms ease, transform 140ms ease;
+    }
+
+    .release-button:hover {
+      transform: translateY(-1px);
+      border-color: #c9a15e;
+      color: #edcf92;
+    }
+
+    .site-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 17px 0 26px;
+      border-top: 1px solid var(--line);
+      color: #777969;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+
+    .site-footer span:last-child {
+      text-align: right;
+    }
+
+    @media (max-width: 760px) {
+      .page-width {
+        width: calc(100% - 40px);
+      }
+
+      .hero {
+        min-height: 0;
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 48px 0 35px;
+      }
+
+      .hero h1 {
+        font-size: clamp(52px, 13vw, 72px);
+      }
+
+      .hero-art {
+        justify-content: center;
+        margin-top: 8px;
+      }
+
+      .hero-art svg {
+        width: min(70vw, 255px);
+      }
+
+      .sheet-main {
+        grid-template-columns: 1fr;
+        align-items: start;
+        gap: 20px;
+      }
+
+      .candidate-stats {
+        max-width: 460px;
+      }
+
+      .sheet-details {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .purse {
+        padding: 14px 0 0;
+        border-top: 1px solid rgba(55, 53, 43, 0.2);
+        border-left: 0;
+      }
+
+      .purse-value {
+        display: inline-block;
+        margin-right: 8px;
+      }
+
+      .purse-caption {
+        display: inline-block;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .page-width {
+        width: calc(100% - 34px);
+      }
+
+      .site-header {
+        min-height: 73px;
+      }
+
+      .brand-mark {
+        width: 33px;
+        height: 33px;
+        flex-basis: 33px;
+      }
+
+      .brand-name {
+        font-size: 19px;
+      }
+
+      .brand-subtitle {
+        font-size: 8px;
+      }
+
+      .header-note {
+        font-size: 8px;
+        letter-spacing: 0.12em;
+      }
+
+      .header-note span {
+        font-size: 8px;
+      }
+
+      .hero {
+        padding-top: 39px;
+      }
+
+      .hero h1 {
+        margin-top: 16px;
+        font-size: 53px;
+      }
+
+      .hero-description {
+        font-size: 14px;
+      }
+
+      .hero-actions {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 13px;
+        margin-top: 24px;
+      }
+
+      .hire-button {
+        width: 100%;
+      }
+
+      .hire-hint {
+        max-width: none;
+      }
+
+      .hero-art svg {
+        width: 205px;
+      }
+
+      .workbench {
+        padding-top: 32px;
+      }
+
+      .workbench-heading h2,
+      .roster-heading h2 {
+        font-size: 25px;
+      }
+
+      .workbench-index {
+        font-size: 8px;
+      }
+
+      .candidate-sheet {
+        padding: 19px 16px 17px;
+      }
+
+      .sheet-topline {
+        align-items: flex-start;
+      }
+
+      .sheet-number {
+        max-width: 92px;
+      }
+
+      .candidate-name {
+        font-size: 34px;
+      }
+
+      .candidate-stats {
+        gap: 5px;
+      }
+
+      .candidate-stat {
+        min-height: 57px;
+        padding: 8px 7px;
+      }
+
+      .candidate-stat dt {
+        font-size: 7px;
+        letter-spacing: 0.06em;
+      }
+
+      .candidate-stat dd {
+        font-size: 11px;
+      }
+
+      .gear-list {
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
+      .gear-list li {
+        min-height: 0;
+      }
+
+      .sheet-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .accept-button,
+      .reject-button {
+        width: 100%;
+      }
+
+      .roster {
+        margin-top: 43px;
+        padding-top: 24px;
+      }
+
+      .hired-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 9px 12px;
+      }
+
+      .hired-person {
+        grid-column: 1 / 2;
+      }
+
+      .hired-pay {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+        padding-left: 1px;
+      }
+
+      .release-button {
+        grid-column: 2 / 3;
+        grid-row: 1 / 3;
+      }
+
+      .site-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .site-footer span:last-child {
+        text-align: left;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header page-width">
+      <a class="brand" href="#top" aria-label="DURF Loot Chest — наверх">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+          <path d="M20 2.5 35.5 11v18L20 37.5 4.5 29V11L20 2.5Z" fill="none" stroke="currentColor" stroke-width="1.4" />
+          <path d="m20 7 10.5 6v12L20 31 9.5 25V13L20 7Z" fill="none" stroke="currentColor" stroke-width="1" />
+          <path d="M20 7v24M9.5 13 20 19l10.5-6M9.5 25 20 19l10.5 6" fill="none" stroke="currentColor" stroke-width="1" />
+        </svg>
+        <span>
+          <span class="brand-name">DURF</span>
+          <span class="brand-subtitle">Loot Chest</span>
+        </span>
+      </a>
+      <div class="header-note">
+        Бюро найма
+        <span>Реестр · 20 профилей</span>
+      </div>
+    </header>
+
+    <main id="top" class="page-width">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Полевой реестр / лист 01</p>
+          <h1 id="page-title">Найдутся<br><span>рабочие руки.</span></h1>
+          <p class="hero-description">Двадцать людей для опасных дел. У каждого своя цена, запас храбрости и предел терпения.</p>
+          <div class="hero-actions">
+            <button type="button" class="hire-button" id="drawButton">👥 Нанять наёмника</button>
+            <span class="hire-hint" id="hireHint">Случайный выбор среди 20 свободных профилей.</span>
+          </div>
+        </div>
+
+        <div class="hero-art">
+          <svg viewBox="0 0 390 350" role="img" aria-label="Гравюра двадцатигранного кубика">
+            <circle cx="195" cy="175" r="150" fill="none" stroke="#615438" stroke-width="1" />
+            <circle cx="195" cy="175" r="139" fill="none" stroke="#393b2d" stroke-width="1" stroke-dasharray="2 7" />
+            <path d="m195 28 127 73 23 130-95 92h-110l-95-92 23-130 127-73Z" fill="#22271f" stroke="#b39155" stroke-width="2" />
+            <path d="m195 28 0 147-127-74 127-73Z" fill="#292d23" stroke="#8d7547" stroke-width="1.2" />
+            <path d="m195 28 127 73-127 74V28Z" fill="#24291f" stroke="#8d7547" stroke-width="1.2" />
+            <path d="m68 101 127 74-150 56 23-130Z" fill="#20251e" stroke="#8d7547" stroke-width="1.2" />
+            <path d="m322 101 23 130-150-56 127-74Z" fill="#2b2e23" stroke="#8d7547" stroke-width="1.2" />
+            <path d="m45 231 150-56-65 148-85-92Z" fill="#25291f" stroke="#8d7547" stroke-width="1.2" />
+            <path d="m345 231-150-56 65 148 85-92Z" fill="#20251e" stroke="#8d7547" stroke-width="1.2" />
+            <path d="m130 323 65-148 65 148H130Z" fill="#292d23" stroke="#8d7547" stroke-width="1.2" />
+            <path d="M117 73 195 47l79 46M56 207l81 12M253 219l81-12M143 302h104" fill="none" stroke="#d0ad6b" stroke-width="1" />
+            <text x="195" y="183" fill="#e2c27d" font-family="Georgia, serif" font-size="54" text-anchor="middle">20</text>
+            <path d="M182 198h26" stroke="#b39155" stroke-width="1" />
+            <text x="195" y="220" fill="#ad9a70" font-family="Arial, sans-serif" font-size="8" font-weight="700" letter-spacing="3" text-anchor="middle">СЛУЧАЙ РЕШИТ</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="workbench" aria-labelledby="candidate-section-title">
+        <div class="workbench-heading">
+          <div>
+            <p class="section-kicker">На столе переговоров</p>
+            <h2 id="candidate-section-title">Новый кандидат</h2>
+          </div>
+          <span class="workbench-index">Один выбор за раз</span>
+        </div>
+
+        <div class="idle-state" id="idleState">
+          <p class="idle-title" id="idleTitle">Пока никто не вызвался.</p>
+          <p class="idle-copy" id="idleCopy">Нажмите «Нанять наёмника», чтобы узнать, кто готов отправиться в путь.</p>
+        </div>
+
+        <article class="candidate-sheet" id="candidateCard" style="display:none" aria-live="polite" aria-labelledby="candidateName">
+          <div class="sheet-topline">
+            <p class="sheet-label">Предложение о службе</p>
+            <span class="sheet-number" id="candidateRecord">Запись № 01 / 20</span>
+          </div>
+
+          <div class="sheet-main">
+            <div>
+              <h3 class="candidate-name" id="candidateName"></h3>
+              <p class="candidate-profession" id="candidateProfession"></p>
+            </div>
+            <dl class="candidate-stats">
+              <div class="candidate-stat stat-hp">
+                <dt>Здоровье</dt>
+                <dd id="candidateHp"></dd>
+              </div>
+              <div class="candidate-stat stat-pay">
+                <dt>Плата</dt>
+                <dd id="candidatePay"></dd>
+              </div>
+              <div class="candidate-stat stat-morale">
+                <dt>Мораль</dt>
+                <dd id="candidateMorale"></dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="sheet-details">
+            <div>
+              <p class="detail-label">Экипировка</p>
+              <ol class="gear-list" id="gearList"></ol>
+            </div>
+            <div class="purse">
+              <p class="detail-label">Золото в кармане</p>
+              <p class="purse-value"><span id="candidateGold"></span> <small>gp</small></p>
+              <p class="purse-caption">Личные сбережения</p>
+            </div>
+          </div>
+
+          <div class="sheet-actions">
+            <button type="button" class="accept-button" id="acceptButton">Нанять</button>
+            <button type="button" class="reject-button" id="rejectButton">Прогнать / отказать</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="roster" aria-labelledby="rosterTitle">
+        <div class="roster-heading">
+          <div>
+            <p class="section-kicker">Список партии</p>
+            <h2 id="rosterTitle">Взяты на службу <span class="roster-count" id="hiredCount">0</span></h2>
+            <p class="storage-note" id="storageNote">Список хранится в этом браузере.</p>
+          </div>
+        </div>
+        <p class="roster-empty" id="rosterEmpty">Здесь появятся нанятые спутники. Записи останутся на этом устройстве.</p>
+        <ul class="hired-list" id="hiredList" aria-live="polite" style="display:none"></ul>
+      </section>
+    </main>
+
+    <footer class="site-footer page-width">
+      <span>DURF Loot Chest / Бюро найма</span>
+      <span>Плата указана за один день службы</span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "durfLootChestHirelingsV1";
+      var profiles = [
+        { id: 1, name: "Борн «Огонёк»", profession: "Факельщик", hp: 3, pay: 2, morale: 6, equipment: ["Факелы (3 шт)", "Кремень и кресало", "Дубина (2 dmg)"], gold: 4 },
+        { id: 2, name: "Гримм Железный", profession: "Мечник", hp: 6, pay: 8, morale: 8, equipment: ["Меч (4 dmg)", "Лёгкая броня (+3 arm)", "Щит (-1 dmg)"], gold: 12 },
+        { id: 3, name: "Марта «Глаз»", profession: "Следопыт", hp: 4, pay: 5, morale: 7, equipment: ["Короткий лук (3 dmg)", "Верёвка (10м)", "Кинжал (3 dmg)"], gold: 8 },
+        { id: 4, name: "Старик Коул", profession: "Носильщик", hp: 4, pay: 3, morale: 6, equipment: ["Большой рюкзак", "Лом", "Палка (2 dmg)"], gold: 5 },
+        { id: 5, name: "Жан «Отмычка»", profession: "Взломщик", hp: 3, pay: 10, morale: 6, equipment: ["Набор отмычек", "Маленькое зеркальце", "Кинжал (3 dmg)"], gold: 15 },
+        { id: 6, name: "Брат Томас", profession: "Послушник", hp: 4, pay: 4, morale: 7, equipment: ["Святая вода", "Символ веры", "Посох (3 dmg)"], gold: 6 },
+        { id: 7, name: "Дрен Копатель", profession: "Могильщик", hp: 5, pay: 3, morale: 7, equipment: ["Лопата", "Фонарь с маслом", "Кистень (4 dmg)"], gold: 7 },
+        { id: 8, name: "Лира Свирель", profession: "Зазывала", hp: 3, pay: 4, morale: 5, equipment: ["Лютня", "Бурдюк вина", "Нож (2 dmg)"], gold: 18 },
+        { id: 9, name: "Варн Несгибаемый", profession: "Наёмник со щитом", hp: 6, pay: 7, morale: 8, equipment: ["Топор (4 dmg)", "Щит (-1 dmg)", "Кожанка (+3 arm)"], gold: 10 },
+        { id: 10, name: "Элик Химик", profession: "Ученик алхимика", hp: 3, pay: 6, morale: 6, equipment: ["1 фляга масла (4 dmg)", "Запарка (лечение 1 HP)", "Кинжал (3 dmg)"], gold: 14 },
+        { id: 11, name: "Карл «Силач»", profession: "Каменотёс", hp: 5, pay: 4, morale: 7, equipment: ["Кирка", "Зубило", "Молот (4 dmg)"], gold: 9 },
+        { id: 12, name: "Орла Дикарка", profession: "Охотница", hp: 5, pay: 6, morale: 8, equipment: ["Копьё (4 dmg)", "Капканы", "Вяленое мясо"], gold: 6 },
+        { id: 13, name: "Виллем Картограф", profession: "Писец", hp: 3, pay: 5, morale: 5, equipment: ["Пергамент и чернила", "Компас", "Кинжал (3 dmg)"], gold: 11 },
+        { id: 14, name: "Ульф Сломанный Нос", profession: "Вышибала", hp: 6, pay: 6, morale: 8, equipment: ["Двуручный молот (5 dmg)", "Кожаная куртка (+3 arm)", "Кастет (2 dmg)"], gold: 8 },
+        { id: 15, name: "Финн Плиточник", profession: "Искатель ловушек", hp: 4, pay: 7, morale: 6, equipment: ["Длинный шест (3м)", "Мел", "Метательные дротики (2 dmg)"], gold: 13 },
+        { id: 16, name: "Мать Берта", profession: "Полевая кухарка", hp: 4, pay: 3, morale: 7, equipment: ["Чугунный котёл", "Скалка (2 dmg)", "Мешок соли"], gold: 5 },
+        { id: 17, name: "Сигурд Зоркий", profession: "Арбалетчик", hp: 4, pay: 9, morale: 7, equipment: ["Арбалет (3 dmg)", "Болты (10 шт)", "Короткий меч (4 dmg)"], gold: 16 },
+        { id: 18, name: "Руди Крысолов", profession: "Живолов", hp: 3, pay: 2, morale: 6, equipment: ["Клетка с крысой", "Флейта", "Маленький дубчик (2 dmg)"], gold: 3 },
+        { id: 19, name: "Эрик Собачник", profession: "Псарь", hp: 4, pay: 5, morale: 7, equipment: ["Боевой пёс (3 HP, 2 dmg)", "Поводок", "Копьё (4 dmg)"], gold: 7 },
+        { id: 20, name: "Кейра Ветреная", profession: "Разведчица", hp: 4, pay: 8, morale: 7, equipment: ["Праща (2 dmg)", "Абордажный крюк", "Шёлковый канат"], gold: 19 }
+      ];
+
+      var drawButton = document.getElementById("drawButton");
+      var hireHint = document.getElementById("hireHint");
+      var candidateCard = document.getElementById("candidateCard");
+      var idleState = document.getElementById("idleState");
+      var idleTitle = document.getElementById("idleTitle");
+      var idleCopy = document.getElementById("idleCopy");
+      var candidateName = document.getElementById("candidateName");
+      var candidateProfession = document.getElementById("candidateProfession");
+      var candidateRecord = document.getElementById("candidateRecord");
+      var candidateHp = document.getElementById("candidateHp");
+      var candidatePay = document.getElementById("candidatePay");
+      var candidateMorale = document.getElementById("candidateMorale");
+      var candidateGold = document.getElementById("candidateGold");
+      var gearList = document.getElementById("gearList");
+      var acceptButton = document.getElementById("acceptButton");
+      var rejectButton = document.getElementById("rejectButton");
+      var hiredCount = document.getElementById("hiredCount");
+      var rosterEmpty = document.getElementById("rosterEmpty");
+      var hiredList = document.getElementById("hiredList");
+      var storageNote = document.getElementById("storageNote");
+      var storageAvailable = true;
+      var currentCandidate = null;
+      var hiredIds = loadHiredIds();
+
+      function containsId(list, id) {
+        var i;
+        for (i = 0; i < list.length; i += 1) {
+          if (list[i] === id) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function isKnownProfile(id) {
+        var i;
+        for (i = 0; i < profiles.length; i += 1) {
+          if (profiles[i].id === id) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function loadHiredIds() {
+        var ids = [];
+        var saved;
+        var parsed;
+        var i;
+        var id;
+
+        try {
+          saved = window.localStorage.getItem(STORAGE_KEY);
+          if (!saved) {
+            return ids;
+          }
+          parsed = JSON.parse(saved);
+          if (!Array.isArray(parsed)) {
+            return ids;
+          }
+          for (i = 0; i < parsed.length; i += 1) {
+            id = Number(parsed[i]);
+            if (Math.floor(id) === id && isKnownProfile(id) && !containsId(ids, id)) {
+              ids.push(id);
+            }
+          }
+        } catch (error) {
+          storageAvailable = false;
+        }
+        return ids;
+      }
+
+      function findProfile(id) {
+        var i;
+        for (i = 0; i < profiles.length; i += 1) {
+          if (profiles[i].id === id) {
+            return profiles[i];
+          }
+        }
+        return null;
+      }
+
+      function isHired(id) {
+        return containsId(hiredIds, id);
+      }
+
+      function getAvailableProfiles() {
+        var available = [];
+        var i;
+        for (i = 0; i < profiles.length; i += 1) {
+          if (!isHired(profiles[i].id)) {
+            available.push(profiles[i]);
+          }
+        }
+        return available;
+      }
+
+      function saveHires() {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(hiredIds));
+          storageAvailable = true;
+          storageNote.textContent = "Список хранится в этом браузере.";
+        } catch (error) {
+          storageAvailable = false;
+          storageNote.textContent = "Браузер запретил локальное сохранение списка.";
+        }
+      }
+
+      function setIdleMessage(title, copy) {
+        idleTitle.textContent = title;
+        idleCopy.textContent = copy;
+      }
+
+      function renderCandidate(profile) {
+        var i;
+        var item;
+        var number;
+        var text;
+
+        candidateName.textContent = profile.name;
+        candidateProfession.textContent = profile.profession;
+        candidateRecord.textContent = "Запись № " + (profile.id < 10 ? "0" : "") + profile.id + " / 20";
+        candidateHp.textContent = profile.hp + " HP";
+        candidatePay.textContent = profile.pay + " gp/день";
+        candidateMorale.textContent = "Мораль " + profile.morale;
+        candidateGold.textContent = profile.gold;
+        gearList.innerHTML = "";
+
+        for (i = 0; i < profile.equipment.length; i += 1) {
+          item = document.createElement("li");
+          number = document.createElement("span");
+          number.className = "gear-number";
+          number.textContent = "0" + (i + 1);
+          text = document.createElement("span");
+          text.textContent = profile.equipment[i];
+          item.appendChild(number);
+          item.appendChild(text);
+          gearList.appendChild(item);
+        }
+
+        candidateCard.style.display = "block";
+        idleState.style.display = "none";
+      }
+
+      function drawCandidate() {
+        var available = getAvailableProfiles();
+        var index;
+
+        if (available.length === 0) {
+          setIdleMessage("Все наёмники уже заняты.", "Отпустите кого-нибудь из списка, чтобы освободить место.");
+          return;
+        }
+
+        index = Math.floor(Math.random() * available.length);
+        currentCandidate = available[index];
+        renderCandidate(currentCandidate);
+      }
+
+      function closeCandidate() {
+        candidateCard.style.display = "none";
+        idleState.style.display = "block";
+        currentCandidate = null;
+      }
+
+      function updateHireButton() {
+        var availableCount = getAvailableProfiles().length;
+
+        if (availableCount === 0) {
+          drawButton.disabled = true;
+          drawButton.textContent = "Все 20 уже наняты";
+          hireHint.textContent = "Отпустите одного из списка, чтобы освободить место.";
+          setIdleMessage("Все наёмники уже заняты.", "Отпустите кого-нибудь из списка, чтобы освободить место.");
+        } else {
+          drawButton.disabled = false;
+          drawButton.textContent = "👥 Нанять наёмника";
+          hireHint.textContent = "Случайный выбор среди " + availableCount + " свободных профилей.";
+        }
+      }
+
+      function renderHiredList() {
+        var i;
+        var profile;
+        var row;
+        var person;
+        var name;
+        var detail;
+        var pay;
+        var release;
+
+        hiredList.innerHTML = "";
+        hiredCount.textContent = hiredIds.length;
+
+        if (hiredIds.length === 0) {
+          rosterEmpty.style.display = "block";
+          hiredList.style.display = "none";
+          return;
+        }
+
+        rosterEmpty.style.display = "none";
+        hiredList.style.display = "block";
+
+        for (i = 0; i < hiredIds.length; i += 1) {
+          profile = findProfile(hiredIds[i]);
+          if (!profile) {
+            continue;
+          }
+
+          row = document.createElement("li");
+          row.className = "hired-row";
+          person = document.createElement("div");
+          person.className = "hired-person";
+          name = document.createElement("p");
+          name.className = "hired-name";
+          name.textContent = profile.name;
+          detail = document.createElement("p");
+          detail.className = "hired-detail";
+          detail.textContent = profile.profession + " · HP " + profile.hp + " · мораль " + profile.morale;
+          pay = document.createElement("span");
+          pay.className = "hired-pay";
+          pay.textContent = profile.pay + " gp/день";
+          release = document.createElement("button");
+          release.type = "button";
+          release.className = "release-button";
+          release.setAttribute("data-profile-id", profile.id);
+          release.setAttribute("aria-label", "Отпустить: " + profile.name);
+          release.textContent = "Отпустить";
+
+          person.appendChild(name);
+          person.appendChild(detail);
+          row.appendChild(person);
+          row.appendChild(pay);
+          row.appendChild(release);
+          hiredList.appendChild(row);
+        }
+      }
+
+      function acceptCandidate() {
+        if (!currentCandidate || isHired(currentCandidate.id)) {
+          return;
+        }
+
+        hiredIds.push(currentCandidate.id);
+        saveHires();
+        renderHiredList();
+        setIdleMessage(currentCandidate.name + " принят на службу.", "Запись добавлена в список нанятых. Плата начисляется за каждый день пути.");
+        closeCandidate();
+        updateHireButton();
+      }
+
+      function rejectCandidate() {
+        if (currentCandidate) {
+          setIdleMessage(currentCandidate.name + " отказано в службе.", "Кандидат удалён со стола переговоров. Можно выбрать другого.");
+        }
+        closeCandidate();
+      }
+
+      function releaseCandidate(id) {
+        var i;
+        for (i = 0; i < hiredIds.length; i += 1) {
+          if (hiredIds[i] === id) {
+            hiredIds.splice(i, 1);
+            break;
+          }
+        }
+        saveHires();
+        renderHiredList();
+        updateHireButton();
+      }
+
+      drawButton.addEventListener("click", drawCandidate);
+      acceptButton.addEventListener("click", acceptCandidate);
+      rejectButton.addEventListener("click", rejectCandidate);
+      hiredList.addEventListener("click", function (event) {
+        var target = event.target;
+        var id;
+
+        while (target && target !== hiredList && target.nodeName !== "BUTTON") {
+          target = target.parentNode;
+        }
+        if (!target || target === hiredList || !target.getAttribute("data-profile-id")) {
+          return;
+        }
+        id = Number(target.getAttribute("data-profile-id"));
+        releaseCandidate(id);
+      });
+
+      if (!storageAvailable) {
+        storageNote.textContent = "Локальное хранилище недоступно: список не переживёт закрытие браузера.";
+      }
+      renderHiredList();
+      updateHireButton();
+    }());
+  </script>
+</body>
+</html>
